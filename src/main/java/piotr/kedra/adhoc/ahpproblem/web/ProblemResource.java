@@ -4,6 +4,7 @@ package piotr.kedra.adhoc.ahpproblem.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import piotr.kedra.adhoc.ahp.entity.ahpdata.AhpProblemData;
 import piotr.kedra.adhoc.ahpproblem.entity.*;
 import piotr.kedra.adhoc.ahpproblem.repo.ProblemRepository;
 import piotr.kedra.adhoc.ahpproblem.repo.ProblemSubscribersRepository;
@@ -98,6 +99,14 @@ public class ProblemResource {
         User one = userRepository.getOne(subscriber.getUserID());
         boolean isData = !Objects.isNull(subscriber.getAhpData());
         return new SubscriberAndDataDTO(one.getEmail(), isData);
+    }
+
+    @PutMapping(consumes = "application/json", produces = "application/json")
+    @RequestMapping("{id}/subscribers/data")
+    public ResponseEntity addSubscribersData(@PathVariable long id, @RequestBody AhpProblemData ahpProblemData){
+        if(ahpProblemService.addSubscriberDataToProblem(id, ahpProblemData))
+            return ResponseEntity.ok().build();
+        return ResponseEntity.status(500).build();
     }
 
 }

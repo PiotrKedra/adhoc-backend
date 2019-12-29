@@ -15,7 +15,6 @@ import piotr.kedra.adhoc.ahpproblem.service.AhpProblemService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,12 +31,31 @@ public class AhpProblemResource {
     @RequestMapping("problem/{id}/ranking")
     public ResponseEntity getRanking(@PathVariable Long id){
 
-        Optional<AhpProblemData> problemData = ahpProblemService.getProblemData(id);
-        if(problemData.isPresent()) {
-            Map<String, Double> calculate = ahpService.calculate(problemData.get());
-            return ResponseEntity.ok(mapToRankingDTO(calculate));
+        List<AhpProblemData> problemData = ahpProblemService.getProblemData(id);
+        if(!problemData.isEmpty()) {
+            Map<String, Double> result = calculateForAll(problemData);
+            return ResponseEntity.ok(mapToRankingDTO(result));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    private Map<String, Double> calculateForAll(List<AhpProblemData> problemData) {
+        List<Map<String, Double>> results = problemData.stream().map(data -> ahpService.calculate(data)).collect(Collectors.toList());
+
+
+        Map<String, Double> first = results.get(0);
+        for (int i = 1; i < results.size(); i++) {
+            for(Map.Entry<String, Double> entry: results.get(i).entrySet()){
+                Double value = first.get(entry.getKey());
+                value += entry.getValue();
+                first.replace(entry.getKey(), value);
+            }
+        }
+        int quantityOfResults = results.size();
+        for(Map.Entry<String, Double> entry: first.entrySet()){
+            first.replace(entry.getKey(), entry.getValue()/quantityOfResults);
+        }
+        return first;
     }
 
     private List<RankingPlacementDTO> mapToRankingDTO(Map<String, Double> ranking) {

@@ -13,10 +13,7 @@ import piotr.kedra.adhoc.ahpproblem.service.parser.CriteriaParser;
 import piotr.kedra.adhoc.ahpproblem.service.parser.ParserService;
 import piotr.kedra.adhoc.auth.UserContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -55,23 +52,23 @@ public class AhpProblemService {
         return criteriaParser.parseToString(criterias);
     }
 
-    public Optional<AhpProblemData> getProblemData(Long problemID){
+    public List<AhpProblemData> getProblemData(Long problemID){
         Optional<Problem> problem = problemRepository.getById(problemID);
         if(problem.isPresent()) {
             List<ProblemSubscriber> byProblemId = subscribersRepository.getByProblemId(problemID);
-            // TODO: 24.12.2019 change this get first ...
-            String ahpData = byProblemId.get(0).getAhpData();
-            Map.Entry<String[][], List<ObjectiveComparison>> listEntry = parserService.parseToAhpObjects(ahpData);
-            AhpProblemData problemData = AhpProblemData.builder()
-                    .objectives(mapToObjectives(problem.get().getObjectives()))
-                    .criteriaList(mapToObjectives(problem.get().getCriterias()))
-                    .objectiveComparisons(listEntry.getValue())
-                    .criteriaPreferenceMatrix(listEntry.getKey())
-                    .build();
-
-            return Optional.of(problemData);
+            return byProblemId.stream().filter(s -> Objects.nonNull(s.getAhpData())).map(s -> mapToAhpProblemData(problem.get(), s.getAhpData())).collect(Collectors.toList());
         }
-        return Optional.empty();
+        return Collections.emptyList();
+    }
+
+    private AhpProblemData mapToAhpProblemData(Problem problem, String ahpData) {
+        Map.Entry<String[][], List<ObjectiveComparison>> listEntry = parserService.parseToAhpObjects(ahpData);
+        return AhpProblemData.builder()
+                .objectives(mapToObjectives(problem.getObjectives()))
+                .criteriaList(mapToObjectives(problem.getCriterias()))
+                .objectiveComparisons(listEntry.getValue())
+                .criteriaPreferenceMatrix(listEntry.getKey())
+                .build();
     }
 
     private List<Objective> mapToObjectives(String objectives) {
@@ -83,5 +80,17 @@ public class AhpProblemService {
             ++index;
         }
         return objectiveList;
+    }
+
+    public boolean addSubscriberDataToProblem(Long problemID, AhpProblemData ahpProblemData){
+        Optional<ProblemSubscriber> problemSubscriber = subscribersRepository.getByProblemIdAndUserID(problemID, userContext.getUserID());
+        if(problemSubscriber.isPresent()){
+            ProblemSubscriber subscriber = problemSubscriber.get();
+            String ahpData = parserService.parseAHPData(ahpProblemData);
+            subscriber.setAhpData(ahpData);
+            ProblemSubscriber updated = subscribersRepository.save(subscriber);
+            return true;
+        }
+        return false;
     }
 }

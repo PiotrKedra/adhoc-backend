@@ -47,4 +47,8 @@ public class ProblemSubscriber {
     public String getAhpData() {
         return ahpData;
     }
+
+    public void setAhpData(String ahpData) {
+        this.ahpData = ahpData;
+    }
 }
