@@ -24,4 +24,8 @@ public class UserContext {
     boolean isContext(){
         return Objects.nonNull(user);
     }
+
+    public User getUser() {
+        return user;
+    }
 }
