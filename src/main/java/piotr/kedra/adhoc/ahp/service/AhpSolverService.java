@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 
 @Component
-public class AhpService {
+public class AhpSolverService {
 
     private final IncompleteEquationMapper incompleteEquationMapper;
     private final EquationSolver solver;
 
     @Autowired
-    public AhpService(IncompleteEquationMapper incompleteEquationMapper, EquationSolver solver) {
+    public AhpSolverService(IncompleteEquationMapper incompleteEquationMapper, EquationSolver solver) {
         this.incompleteEquationMapper = incompleteEquationMapper;
         this.solver = solver;
     }

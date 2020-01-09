@@ -4,7 +4,6 @@ package piotr.kedra.adhoc.ahpproblem.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import piotr.kedra.adhoc.ahp.entity.ahpdata.AhpProblemData;
 import piotr.kedra.adhoc.ahpproblem.entity.*;
 import piotr.kedra.adhoc.ahpproblem.repo.ProblemRepository;
 import piotr.kedra.adhoc.ahpproblem.repo.ProblemSubscribersRepository;
@@ -15,7 +14,6 @@ import piotr.kedra.adhoc.auth.UserRepository;
 import piotr.kedra.adhoc.auth.entity.User;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,7 +63,7 @@ public class ProblemResource {
     @GetMapping(produces = "application/json")
     @RequestMapping("shared")
     public ResponseEntity getAllShared(){
-        List<Problem> allById = problemRepository.customQuery(userContext.getUserID());
+        List<Problem> allById = problemRepository.getProblemsBySubscriberId(userContext.getUserID());
 
         List<ProblemDTO> shared = allById.stream().filter(problem -> !problem.getOwnerID().equals(userContext.getUserID())).map(this::mapToDTO).collect(Collectors.toList());
         return ResponseEntity.ok(shared);
@@ -88,25 +86,6 @@ public class ProblemResource {
         return ResponseEntity.ok(problem);
     }
 
-    @GetMapping(consumes = "application/json", produces = "application/json")
-    @RequestMapping("{id}/subscribers")
-    public ResponseEntity getSubscribers(@PathVariable long id){
-        List<ProblemSubscriber> subscribers = subscribersRepository.getByProblemId(id);
-        return ResponseEntity.ok(subscribers.stream().map(this::mapSubscriberToDTO).collect(Collectors.toList()));
-    }
 
-    private SubscriberAndDataDTO mapSubscriberToDTO(ProblemSubscriber subscriber) {
-        User one = userRepository.getOne(subscriber.getUserID());
-        boolean isData = !Objects.isNull(subscriber.getAhpData());
-        return new SubscriberAndDataDTO(one.getEmail(), isData);
-    }
-
-    @PutMapping(consumes = "application/json", produces = "application/json")
-    @RequestMapping("{id}/subscribers/data")
-    public ResponseEntity addSubscribersData(@PathVariable long id, @RequestBody AhpProblemData ahpProblemData){
-        if(ahpProblemService.addSubscriberDataToProblem(id, ahpProblemData))
-            return ResponseEntity.ok().build();
-        return ResponseEntity.status(500).build();
-    }
 
 }

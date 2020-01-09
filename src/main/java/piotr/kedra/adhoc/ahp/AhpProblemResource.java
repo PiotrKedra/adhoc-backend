@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import piotr.kedra.adhoc.ahp.entity.RankingPlacementDTO;
 import piotr.kedra.adhoc.ahp.entity.ahpdata.AhpProblemData;
-import piotr.kedra.adhoc.ahp.service.AhpService;
+import piotr.kedra.adhoc.ahp.service.AhpSolverService;
 import piotr.kedra.adhoc.ahpproblem.service.AhpProblemService;
 
 import java.util.Comparator;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class AhpProblemResource {
 
     @Autowired
-    private AhpService ahpService;
+    private AhpSolverService ahpSolverService;
 
     @Autowired
     private AhpProblemService ahpProblemService;
@@ -40,7 +40,7 @@ public class AhpProblemResource {
     }
 
     private Map<String, Double> calculateForAll(List<AhpProblemData> problemData) {
-        List<Map<String, Double>> results = problemData.stream().map(data -> ahpService.calculate(data)).collect(Collectors.toList());
+        List<Map<String, Double>> results = problemData.stream().map(data -> ahpSolverService.calculate(data)).collect(Collectors.toList());
 
 
         Map<String, Double> first = results.get(0);
