@@ -30,7 +30,7 @@ public class AuthResource {
         }
     }
 
-    @PostMapping(produces = "application/json")
+    @PostMapping(produces = "application/json", consumes = "application/json")
     @RequestMapping("token")
     public ResponseEntity getAuthorizationToken(@RequestBody User user){
         System.out.println("GET");

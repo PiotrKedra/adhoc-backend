@@ -13,6 +13,6 @@ public class AuthConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authorizationHandlerInterceptor).excludePathPatterns("/auth/**").excludePathPatterns("/auth/token/**");
+        registry.addInterceptor(authorizationHandlerInterceptor).addPathPatterns("/**").excludePathPatterns("/auth/**").excludePathPatterns("/auth/token/**");
     }
 }
